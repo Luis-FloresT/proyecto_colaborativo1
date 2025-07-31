@@ -1,155 +1,179 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react';
 
-export default function TaskManager() {
-  const [tareas, setTareas] = useState(() => {
-    const tareasGuardadas = localStorage.getItem('tareas')
-    return tareasGuardadas ? JSON.parse(tareasGuardadas) : []
-  })
+function Proyecto() {
+  const [proyectos, setProyectos] = useState([
+    {
+      nombre: "Rediseño Web",
+      integrantes: "Juan, María",
+      telefono: "0999999999",
+      fechaInicio: "2025-05-01",
+      fechaFin: "2025-06-01",
+      descripcion: "Actualización de la interfaz web."
+    },
+    {
+      nombre: "Implementación CRM",
+      integrantes: "Pedro, Ana",
+      telefono: "0988888888",
+      fechaInicio: "2025-05-10",
+      fechaFin: "2025-07-15",
+      descripcion: "Integración de un CRM para ventas."
+    }
+  ]);
 
-  const [mostrarModalNueva, setMostrarModalNueva] = useState(false)
-  const [mostrarModalEditar, setMostrarModalEditar] = useState(false)
-  const [tareaActual, setTareaActual] = useState(null)
+  const [proyectoActualIndex, setProyectoActualIndex] = useState(null);
+  const [formulario, setFormulario] = useState({
+    nombre: "",
+    integrantes: "",
+    telefono: "",
+    fechaInicio: "",
+    fechaFin: "",
+    descripcion: ""
+  });
+  const [modalAbierto, setModalAbierto] = useState(false);
 
-  const [nuevaTarea, setNuevaTarea] = useState({
-    nombre: '',
-    proyecto: '',
-    fechaLimite: '',
-    estado: 'Pendiente'
-  })
-
-  const [editarTarea, setEditarTarea] = useState({
-    nombre: '',
-    proyecto: '',
-    fechaLimite: '',
-    estado: ''
-  })
-
-  // 🔁 Guarda en localStorage cuando cambien las tareas
-  useEffect(() => {
-    localStorage.setItem('tareas', JSON.stringify(tareas))
-  }, [tareas])
-
-  const abrirModalNueva = () => {
-    setNuevaTarea({ nombre: '', proyecto: '', fechaLimite: '', estado: 'Pendiente' })
-    setMostrarModalNueva(true)
-  }
-
-  const cerrarModalNueva = () => setMostrarModalNueva(false)
-
-  const guardarNuevaTarea = (e) => {
-    e.preventDefault()
-    if (nuevaTarea.nombre && nuevaTarea.proyecto && nuevaTarea.fechaLimite) {
-      const nuevaId = tareas.length > 0 ? Math.max(...tareas.map(t => t.id || 0)) + 1 : 1
-      const nueva = { ...nuevaTarea, id: nuevaId }
-      setTareas(prev => [...prev, nueva])
-      cerrarModalNueva()
+  const abrirModal = (index = null) => {
+    if (index !== null) {
+      setFormulario(proyectos[index]);
+      setProyectoActualIndex(index);
     } else {
-      alert("Por favor completa todos los campos.")
+      setFormulario({
+        nombre: "",
+        integrantes: "",
+        telefono: "",
+        fechaInicio: "",
+        fechaFin: "",
+        descripcion: ""
+      });
+      setProyectoActualIndex(null);
     }
-  }
+    setModalAbierto(true);
+  };
 
-  const abrirModalEditar = (tarea) => {
-    setTareaActual(tarea)
-    setEditarTarea({
-      nombre: tarea.nombre,
-      proyecto: tarea.proyecto,
-      fechaLimite: tarea.fechaLimite,
-      estado: tarea.estado
-    })
-    setMostrarModalEditar(true)
-  }
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setFormulario({
+      nombre: "",
+      integrantes: "",
+      telefono: "",
+      fechaInicio: "",
+      fechaFin: "",
+      descripcion: ""
+    });
+    setProyectoActualIndex(null);
+  };
 
-  const cerrarModalEditar = () => {
-    setMostrarModalEditar(false)
-    setTareaActual(null)
-  }
+  const guardarProyecto = () => {
+    const { nombre, integrantes, telefono, fechaInicio, fechaFin, descripcion } = formulario;
 
-  const guardarEdicionTarea = (e) => {
-    e.preventDefault()
-    if (editarTarea.nombre && editarTarea.proyecto && editarTarea.fechaLimite) {
-      setTareas(tareas.map(t =>
-        t.id === tareaActual.id ? { ...t, ...editarTarea } : t
-      ))
-      cerrarModalEditar()
+    if (nombre && integrantes && telefono && fechaInicio && fechaFin && descripcion) {
+      if (proyectoActualIndex === null) {
+        setProyectos([...proyectos, formulario]);
+      } else {
+        const nuevosProyectos = [...proyectos];
+        nuevosProyectos[proyectoActualIndex] = formulario;
+        setProyectos(nuevosProyectos);
+      }
+      cerrarModal();
     } else {
-      alert("Por favor completa todos los campos.")
+      alert("Por favor completa todos los campos.");
     }
-  }
+  };
 
-  const marcarCompletada = (id) => {
-    setTareas(tareas.map(t =>
-      t.id === id ? { ...t, estado: "Completada" } : t
-    ))
-  }
-
-  const eliminarTarea = (id) => {
-    if (confirm("¿Estás seguro de que quieres eliminar esta tarea?")) {
-      setTareas(tareas.filter(t => t.id !== id))
+  const eliminarProyecto = (index) => {
+    if (confirm("¿Estás seguro de que quieres eliminar este proyecto?")) {
+      const nuevosProyectos = proyectos.filter((_, i) => i !== index);
+      setProyectos(nuevosProyectos);
     }
-  }
+  };
 
   return (
-    <section className="task-section">
-      <h2>Tareas Asignadas</h2>
-      <button onClick={abrirModalNueva} style={{ marginBottom: '20px' }}>
-        Añadir Tarea
+    <div>
+      <h2>Proyectos</h2>
+      <button id="add-project-btn" onClick={() => abrirModal()}>
+        Añadir Proyecto
       </button>
 
-      <div id="task-list">
-        {tareas.map(tarea => (
-          <div key={tarea.id} className="task-card">
-            <h3>{tarea.nombre}</h3>
-            <p><strong>Proyecto:</strong> {tarea.proyecto}</p>
-            <p><strong>Fecha límite:</strong> {tarea.fechaLimite}</p>
-            <p><strong>Estado:</strong> {tarea.estado}</p>
-            <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button onClick={() => marcarCompletada(tarea.id)} className="complete-btn" style={{ backgroundColor: '#10b981' }}>Marcar como completada</button>
-              <button onClick={() => abrirModalEditar(tarea)} className="complete-btn" style={{ backgroundColor: '#f59e0b' }}>Editar</button>
-              <button onClick={() => eliminarTarea(tarea.id)} className="complete-btn" style={{ backgroundColor: '#ef4444' }}>Eliminar</button>
-            </div>
+      <div id="project-list">
+        {proyectos.map((proyecto, index) => (
+          <div className="project-item" key={index}>
+            <h3>{proyecto.nombre}</h3>
+            <p><strong>Integrantes:</strong> {proyecto.integrantes}</p>
+            <p><strong>Teléfono:</strong> {proyecto.telefono}</p>
+            <p><strong>Fecha inicio:</strong> {proyecto.fechaInicio}</p>
+            <p><strong>Fecha fin:</strong> {proyecto.fechaFin}</p>
+            <p><strong>Descripción:</strong> {proyecto.descripcion}</p>
+            <button
+              className="complete-btn"
+              style={{ backgroundColor: "#f59e0b" }}
+              onClick={() => abrirModal(index)}
+            >
+              Editar
+            </button>
+            <button
+              className="complete-btn"
+              style={{ backgroundColor: "#ef4444" }}
+              onClick={() => eliminarProyecto(index)}
+            >
+              Eliminar
+            </button>
           </div>
         ))}
       </div>
 
-      {mostrarModalNueva && (
+      {modalAbierto && (
         <div className="modal">
           <div className="modal-content">
-            <span className="close" onClick={cerrarModalNueva}>&times;</span>
-            <h3>Nueva Tarea</h3>
-            <form onSubmit={guardarNuevaTarea}>
-              <input type="text" placeholder="Nombre de la tarea" value={nuevaTarea.nombre} onChange={(e) => setNuevaTarea({ ...nuevaTarea, nombre: e.target.value })} required />
-              <input type="text" placeholder="Proyecto" value={nuevaTarea.proyecto} onChange={(e) => setNuevaTarea({ ...nuevaTarea, proyecto: e.target.value })} required />
-              <input type="date" value={nuevaTarea.fechaLimite} onChange={(e) => setNuevaTarea({ ...nuevaTarea, fechaLimite: e.target.value })} required />
-              <select value={nuevaTarea.estado} onChange={(e) => setNuevaTarea({ ...nuevaTarea, estado: e.target.value })} required>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En progreso">En progreso</option>
-                <option value="Completada">Completada</option>
-              </select>
-              <button type="submit">Guardar tarea</button>
-            </form>
-          </div>
-        </div>
-      )}
+            <span id="close-modal" className="close" onClick={cerrarModal}>&times;</span>
 
-      {mostrarModalEditar && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={cerrarModalEditar}>&times;</span>
-            <h3>Editar Tarea</h3>
-            <form onSubmit={guardarEdicionTarea}>
-              <input type="text" placeholder="Nombre de la tarea" value={editarTarea.nombre} onChange={(e) => setEditarTarea({ ...editarTarea, nombre: e.target.value })} required />
-              <input type="text" placeholder="Proyecto" value={editarTarea.proyecto} onChange={(e) => setEditarTarea({ ...editarTarea, proyecto: e.target.value })} required />
-              <input type="date" value={editarTarea.fechaLimite} onChange={(e) => setEditarTarea({ ...editarTarea, fechaLimite: e.target.value })} required />
-              <select value={editarTarea.estado} onChange={(e) => setEditarTarea({ ...editarTarea, estado: e.target.value })} required>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En progreso">En progreso</option>
-                <option value="Completada">Completada</option>
-              </select>
-              <button type="submit">Guardar cambios</button>
-            </form>
+            <input
+              id="project-name"
+              type="text"
+              placeholder="Nombre del proyecto"
+              value={formulario.nombre}
+              onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
+            />
+            <input
+              id="project-members"
+              type="text"
+              placeholder="Integrantes"
+              value={formulario.integrantes}
+              onChange={(e) => setFormulario({ ...formulario, integrantes: e.target.value })}
+            />
+            <input
+              id="project-phone"
+              type="text"
+              placeholder="Teléfono"
+              value={formulario.telefono}
+              onChange={(e) => setFormulario({ ...formulario, telefono: e.target.value })}
+            />
+            <input
+              id="project-start"
+              type="date"
+              value={formulario.fechaInicio}
+              onChange={(e) => setFormulario({ ...formulario, fechaInicio: e.target.value })}
+            />
+            <input
+              id="project-end"
+              type="date"
+              value={formulario.fechaFin}
+              onChange={(e) => setFormulario({ ...formulario, fechaFin: e.target.value })}
+            />
+            <textarea
+              id="project-desc"
+              placeholder="Descripción"
+              value={formulario.descripcion}
+              onChange={(e) => setFormulario({ ...formulario, descripcion: e.target.value })}
+            ></textarea>
+
+            <button id="save-project-btn" onClick={guardarProyecto}>
+              Guardar Proyecto
+            </button>
           </div>
         </div>
       )}
-    </section>
-  )
+    </div>
+  );
 }
+
+export default Proyecto;
+  
