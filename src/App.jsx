@@ -16,7 +16,23 @@ function App() {
         <Login onLogin={setUsuarioActual} />
       ) : (
         <>
-          <p>Bienvenido, {usuarioActual} 👋</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <p>Bienvenido, {usuarioActual} 👋</p>
+            <button 
+              onClick={() => setUsuarioActual(null)}
+              style={{ 
+                backgroundColor: '#ef4444', 
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              Cerrar Sesión
+            </button>
+          </div>
 
           <div className="main-content">
             <div className="task-section">
@@ -33,5 +49,3 @@ function App() {
 }
 
 export default App
-
-
