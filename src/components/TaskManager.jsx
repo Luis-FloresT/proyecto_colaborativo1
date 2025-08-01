@@ -1,30 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function TaskManager() {
-  const [tareas, setTareas] = useState([
-    {
-      nombre: "Diseñar interfaz",
-      proyecto: "App Web CRM",
-      fechaLimite: "2025-06-01",
-      estado: "Pendiente"
-    },
-    {
-      nombre: "Revisión de código",
-      proyecto: "Sistema Contable",
-      fechaLimite: "2025-06-05",
-      estado: "En progreso"
-    },
-    {
-      nombre: "Presentar informe",
-      proyecto: "Auditoría interna",
-      fechaLimite: "2025-06-10",
-      estado: "Pendiente"
-    }
-  ])
-
+  const [tareas, setTareas] = useState([])
   const [tareaActualIndex, setTareaActualIndex] = useState(null)
   const [mostrarModalAdd, setMostrarModalAdd] = useState(false)
   const [mostrarModalEdit, setMostrarModalEdit] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   const [form, setForm] = useState({
     nombre: '',
@@ -32,6 +13,73 @@ function TaskManager() {
     fechaLimite: '',
     estado: 'Pendiente'
   })
+
+  // Cargar tareas del localStorage al iniciar
+  useEffect(() => {
+    const tareasGuardadas = localStorage.getItem('tareas')
+    if (tareasGuardadas) {
+      try {
+        setTareas(JSON.parse(tareasGuardadas))
+      } catch (error) {
+        console.error('Error al cargar tareas:', error)
+        // Si hay error, usar datos por defecto
+        const tareasDefault = [
+          {
+            nombre: "Diseñar interfaz",
+            proyecto: "App Web CRM",
+            fechaLimite: "2025-06-01",
+            estado: "Pendiente"
+          },
+          {
+            nombre: "Revisión de código",
+            proyecto: "Sistema Contable",
+            fechaLimite: "2025-06-05",
+            estado: "En progreso"
+          },
+          {
+            nombre: "Presentar informe",
+            proyecto: "Auditoría interna",
+            fechaLimite: "2025-06-10",
+            estado: "Pendiente"
+          }
+        ]
+        setTareas(tareasDefault)
+        localStorage.setItem('tareas', JSON.stringify(tareasDefault))
+      }
+    } else {
+      // Datos por defecto si no hay nada guardado
+      const tareasDefault = [
+        {
+          nombre: "Diseñar interfaz",
+          proyecto: "App Web CRM",
+          fechaLimite: "2025-06-01",
+          estado: "Pendiente"
+        },
+        {
+          nombre: "Revisión de código",
+          proyecto: "Sistema Contable",
+          fechaLimite: "2025-06-05",
+          estado: "En progreso"
+        },
+        {
+          nombre: "Presentar informe",
+          proyecto: "Auditoría interna",
+          fechaLimite: "2025-06-10",
+          estado: "Pendiente"
+        }
+      ]
+      setTareas(tareasDefault)
+      localStorage.setItem('tareas', JSON.stringify(tareasDefault))
+    }
+    setLoaded(true)
+  }, [])
+
+  // Guardar en localStorage cada vez que cambien las tareas
+  useEffect(() => {
+    if (loaded && tareas.length >= 0) {
+      localStorage.setItem('tareas', JSON.stringify(tareas))
+    }
+  }, [tareas, loaded])
 
   const abrirEditarTarea = (index) => {
     setTareaActualIndex(index)
@@ -59,9 +107,13 @@ function TaskManager() {
   }
 
   const agregarTarea = () => {
-    setTareas([...tareas, form])
-    setForm({ nombre: '', proyecto: '', fechaLimite: '', estado: 'Pendiente' })
-    setMostrarModalAdd(false)
+    if (form.nombre && form.proyecto && form.fechaLimite) {
+      setTareas([...tareas, form])
+      setForm({ nombre: '', proyecto: '', fechaLimite: '', estado: 'Pendiente' })
+      setMostrarModalAdd(false)
+    } else {
+      alert("Por favor completa todos los campos obligatorios.")
+    }
   }
 
   return (
