@@ -1,185 +1,240 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
 
-function TaskManager() {
-  const [tareas, setTareas] = useState([])
-  const [tareaActualIndex, setTareaActualIndex] = useState(null)
-  const [mostrarModalAdd, setMostrarModalAdd] = useState(false)
-  const [mostrarModalEdit, setMostrarModalEdit] = useState(false)
-  const [loaded, setLoaded] = useState(false)
+function Proyecto() {
+  const [proyectos, setProyectos] = useState([]);
+  const [proyectoActualIndex, setProyectoActualIndex] = useState(null);
+  const [formulario, setFormulario] = useState({
+    nombre: "",
+    integrantes: "",
+    telefono: "",
+    fechaInicio: "",
+    fechaFin: "",
+    descripcion: ""
+  });
+  const [modalAbierto, setModalAbierto] = useState(false);
 
-  const [form, setForm] = useState({
-    nombre: '',
-    proyecto: '',
-    fechaLimite: '',
-    estado: 'Pendiente'
-  })
-
-  // Cargar tareas del localStorage al iniciar
+  // Cargar datos del localStorage al iniciar
   useEffect(() => {
-    const tareasGuardadas = localStorage.getItem('tareas')
-    if (tareasGuardadas) {
+    const proyectosGuardados = localStorage.getItem('proyectos')
+    if (proyectosGuardados) {
       try {
-        setTareas(JSON.parse(tareasGuardadas))
+        setProyectos(JSON.parse(proyectosGuardados))
       } catch (error) {
-        console.error('Error al cargar tareas:', error)
+        console.error('Error al cargar proyectos:', error)
         // Si hay error, usar datos por defecto
-        const tareasDefault = [
+        const proyectosDefault = [
           {
-            nombre: "Diseñar interfaz",
-            proyecto: "App Web CRM",
-            fechaLimite: "2025-06-01",
-            estado: "Pendiente"
+            id: 1,
+            nombre: "Rediseño Web",
+            integrantes: "Juan, María",
+            telefono: "0999999999",
+            fechaInicio: "2025-05-01",
+            fechaFin: "2025-06-01",
+            descripcion: "Actualización de la interfaz web."
           },
           {
-            nombre: "Revisión de código",
-            proyecto: "Sistema Contable",
-            fechaLimite: "2025-06-05",
-            estado: "En progreso"
-          },
-          {
-            nombre: "Presentar informe",
-            proyecto: "Auditoría interna",
-            fechaLimite: "2025-06-10",
-            estado: "Pendiente"
+            id: 2,
+            nombre: "Implementación CRM",
+            integrantes: "Pedro, Ana",
+            telefono: "0988888888",
+            fechaInicio: "2025-05-10",
+            fechaFin: "2025-07-15",
+            descripcion: "Integración de un CRM para ventas."
           }
         ]
-        setTareas(tareasDefault)
-        localStorage.setItem('tareas', JSON.stringify(tareasDefault))
+        setProyectos(proyectosDefault)
+        localStorage.setItem('proyectos', JSON.stringify(proyectosDefault))
       }
     } else {
       // Datos por defecto si no hay nada guardado
-      const tareasDefault = [
+      const proyectosDefault = [
         {
-          nombre: "Diseñar interfaz",
-          proyecto: "App Web CRM",
-          fechaLimite: "2025-06-01",
-          estado: "Pendiente"
+          id: 1,
+          nombre: "Rediseño Web",
+          integrantes: "Juan, María",
+          telefono: "0999999999",
+          fechaInicio: "2025-05-01",
+          fechaFin: "2025-06-01",
+          descripcion: "Actualización de la interfaz web."
         },
         {
-          nombre: "Revisión de código",
-          proyecto: "Sistema Contable",
-          fechaLimite: "2025-06-05",
-          estado: "En progreso"
-        },
-        {
-          nombre: "Presentar informe",
-          proyecto: "Auditoría interna",
-          fechaLimite: "2025-06-10",
-          estado: "Pendiente"
+          id: 2,
+          nombre: "Implementación CRM",
+          integrantes: "Pedro, Ana",
+          telefono: "0988888888",
+          fechaInicio: "2025-05-10",
+          fechaFin: "2025-07-15",
+          descripcion: "Integración de un CRM para ventas."
         }
       ]
-      setTareas(tareasDefault)
-      localStorage.setItem('tareas', JSON.stringify(tareasDefault))
+      setProyectos(proyectosDefault)
+      localStorage.setItem('proyectos', JSON.stringify(proyectosDefault))
     }
-    setLoaded(true)
   }, [])
 
-  // Guardar en localStorage cada vez que cambien las tareas
+  // Guardar en localStorage cada vez que cambien los proyectos
   useEffect(() => {
-    if (loaded && tareas.length >= 0) {
-      localStorage.setItem('tareas', JSON.stringify(tareas))
+    if (proyectos.length > 0) {
+      localStorage.setItem('proyectos', JSON.stringify(proyectos))
     }
-  }, [tareas, loaded])
+  }, [proyectos])
 
-  const abrirEditarTarea = (index) => {
-    setTareaActualIndex(index)
-    setForm(tareas[index])
-    setMostrarModalEdit(true)
-  }
-
-  const guardarEdicionTarea = () => {
-    const nuevasTareas = [...tareas]
-    nuevasTareas[tareaActualIndex] = form
-    setTareas(nuevasTareas)
-    setMostrarModalEdit(false)
-  }
-
-  const eliminarTarea = (index) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta tarea?")) {
-      setTareas(tareas.filter((_, i) => i !== index))
-    }
-  }
-
-  const marcarCompletada = (index) => {
-    const nuevasTareas = [...tareas]
-    nuevasTareas[index].estado = "Completada"
-    setTareas(nuevasTareas)
-  }
-
-  const agregarTarea = () => {
-    if (form.nombre && form.proyecto && form.fechaLimite) {
-      setTareas([...tareas, form])
-      setForm({ nombre: '', proyecto: '', fechaLimite: '', estado: 'Pendiente' })
-      setMostrarModalAdd(false)
+  const abrirModal = (index = null) => {
+    if (index !== null) {
+      setFormulario(proyectos[index]);
+      setProyectoActualIndex(index);
     } else {
-      alert("Por favor completa todos los campos obligatorios.")
+      setFormulario({
+        nombre: "",
+        integrantes: "",
+        telefono: "",
+        fechaInicio: "",
+        fechaFin: "",
+        descripcion: ""
+      });
+      setProyectoActualIndex(null);
     }
-  }
+    setModalAbierto(true);
+  };
+
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setFormulario({
+      nombre: "",
+      integrantes: "",
+      telefono: "",
+      fechaInicio: "",
+      fechaFin: "",
+      descripcion: ""
+    });
+    setProyectoActualIndex(null);
+  };
+
+  const guardarProyecto = () => {
+    const { nombre, integrantes, telefono, fechaInicio, fechaFin, descripcion } = formulario;
+
+    if (nombre && integrantes && telefono && fechaInicio && fechaFin && descripcion) {
+      if (proyectoActualIndex === null) {
+        // Crear nuevo proyecto
+        const nuevoId = proyectos.length > 0 ? Math.max(...proyectos.map(p => p.id)) + 1 : 1;
+        const proyectoConId = { ...formulario, id: nuevoId };
+        setProyectos([...proyectos, proyectoConId]);
+      } else {
+        // Editar proyecto existente
+        const nuevosProyectos = [...proyectos];
+        nuevosProyectos[proyectoActualIndex] = { ...proyectos[proyectoActualIndex], ...formulario };
+        setProyectos(nuevosProyectos);
+      }
+      cerrarModal();
+    } else {
+      alert("Por favor completa todos los campos.");
+    }
+  };
+
+  const eliminarProyecto = (index) => {
+    if (confirm("¿Estás seguro de que quieres eliminar este proyecto?")) {
+      const nuevosProyectos = proyectos.filter((_, i) => i !== index);
+      setProyectos(nuevosProyectos);
+      // Si no quedan proyectos, limpiar localStorage
+      if (nuevosProyectos.length === 0) {
+        localStorage.removeItem('proyectos');
+      }
+    }
+  };
 
   return (
     <div>
-    <h2>Tareas Asignadas</h2>
-      <button id="add-task-btn" onClick={() => setMostrarModalAdd(true)}>Añadir Tarea</button>
+      <h2>Proyectos</h2>
+      <button onClick={() => abrirModal()} style={{ marginBottom: '20px' }}>
+        Agregar Proyecto
+      </button>
 
-      <div id="task-list">
-        {tareas.map((tarea, index) => (
-          <div className="task-card" key={index}>
-            <h3>{tarea.nombre}</h3>
-            <p><strong>Proyecto:</strong> {tarea.proyecto}</p>
-            <p><strong>Fecha límite:</strong> {tarea.fechaLimite}</p>
-            <p><strong>Estado:</strong> {tarea.estado}</p>
-            <button className="complete-btn" onClick={() => marcarCompletada(index)}>Marcar como completada</button>
-            <button className="complete-btn" onClick={() => abrirEditarTarea(index)} style={{ backgroundColor: '#f59e0b' }}>Editar</button>
-            <button className="complete-btn" onClick={() => eliminarTarea(index)} style={{ backgroundColor: '#ef4444' }}>Eliminar</button>
+      <div id="project-list">
+        {proyectos.map((proyecto, index) => (
+          <div className="project-item" key={proyecto.id || index}>
+            <h3>{proyecto.nombre}</h3>
+            <p><strong>Integrantes:</strong> {proyecto.integrantes}</p>
+            <p><strong>Teléfono:</strong> {proyecto.telefono}</p>
+            <p><strong>Fecha inicio:</strong> {proyecto.fechaInicio}</p>
+            <p><strong>Fecha fin:</strong> {proyecto.fechaFin}</p>
+            <p><strong>Descripción:</strong> {proyecto.descripcion}</p>
+            
+            <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                className="complete-btn"
+                style={{ backgroundColor: "#f59e0b" }}
+                onClick={() => abrirModal(index)}
+              >
+                Editar
+              </button>
+              <button
+                className="complete-btn"
+                style={{ backgroundColor: "#ef4444" }}
+                onClick={() => eliminarProyecto(index)}
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      {mostrarModalAdd && (
+      {modalAbierto && (
         <div className="modal">
           <div className="modal-content">
-            <span className="close" onClick={() => setMostrarModalAdd(false)}>&times;</span>
-            <h3>Nueva Tarea</h3>
-            <label>Nombre</label>
-            <input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
-            <label>Proyecto</label>
-            <input value={form.proyecto} onChange={e => setForm({ ...form, proyecto: e.target.value })} />
-            <label>Fecha límite</label>
-            <input type="date" value={form.fechaLimite} onChange={e => setForm({ ...form, fechaLimite: e.target.value })} />
-            <label>Estado</label>
-            <select value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}>
-              <option>Pendiente</option>
-              <option>En progreso</option>
-              <option>Completada</option>
-            </select>
-            <button id="save-new-task-btn" onClick={agregarTarea}>Guardar Tarea</button>
-          </div>
-        </div>
-      )}
+            <span className="close" onClick={cerrarModal}>&times;</span>
+            <h3>{proyectoActualIndex === null ? 'Nuevo Proyecto' : 'Editar Proyecto'}</h3>
+            
+            <input
+              type="text"
+              placeholder="Nombre del proyecto"
+              value={formulario.nombre}
+              onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Integrantes"
+              value={formulario.integrantes}
+              onChange={(e) => setFormulario({ ...formulario, integrantes: e.target.value })}
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Número de celular"
+              value={formulario.telefono}
+              onChange={(e) => setFormulario({ ...formulario, telefono: e.target.value })}
+              required
+            />
+            <input
+              type="date"
+              placeholder="Fecha de inicio"
+              value={formulario.fechaInicio}
+              onChange={(e) => setFormulario({ ...formulario, fechaInicio: e.target.value })}
+              required
+            />
+            <input
+              type="date"
+              placeholder="Fecha de finalización"
+              value={formulario.fechaFin}
+              onChange={(e) => setFormulario({ ...formulario, fechaFin: e.target.value })}
+              required
+            />
+            <textarea
+              placeholder="Descripción del Proyecto"
+              value={formulario.descripcion}
+              onChange={(e) => setFormulario({ ...formulario, descripcion: e.target.value })}
+              required
+            ></textarea>
 
-      {mostrarModalEdit && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setMostrarModalEdit(false)}>&times;</span>
-            <h3>Editar Tarea</h3>
-            <label>Nombre</label>
-            <input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
-            <label>Proyecto</label>
-            <input value={form.proyecto} onChange={e => setForm({ ...form, proyecto: e.target.value })} />
-            <label>Fecha límite</label>
-            <input type="date" value={form.fechaLimite} onChange={e => setForm({ ...form, fechaLimite: e.target.value })} />
-            <label>Estado</label>
-            <select value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}>
-              <option>Pendiente</option>
-              <option>En progreso</option>
-              <option>Completada</option>
-            </select>
-            <button id="save-edit-task-btn" onClick={guardarEdicionTarea}>Guardar Cambios</button>
+            <button onClick={guardarProyecto}>
+              {proyectoActualIndex === null ? 'Guardar Proyecto' : 'Guardar Cambios'}
+            </button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default TaskManager
+export default Proyecto;
