@@ -19,7 +19,8 @@ function TaskManager() {
     const tareasGuardadas = localStorage.getItem('tareas')
     if (tareasGuardadas) {
       try {
-        setTareas(JSON.parse(tareasGuardadas))
+        const tareasParseadas = JSON.parse(tareasGuardadas)
+        setTareas(tareasParseadas)
       } catch (error) {
         console.error('Error al cargar tareas:', error)
         // Si hay error, usar datos por defecto
@@ -44,7 +45,6 @@ function TaskManager() {
           }
         ]
         setTareas(tareasDefault)
-        localStorage.setItem('tareas', JSON.stringify(tareasDefault))
       }
     } else {
       // Datos por defecto si no hay nada guardado
@@ -69,14 +69,13 @@ function TaskManager() {
         }
       ]
       setTareas(tareasDefault)
-      localStorage.setItem('tareas', JSON.stringify(tareasDefault))
     }
     setLoaded(true)
   }, [])
 
-  // Guardar en localStorage cada vez que cambien las tareas
+  // Guardar en localStorage cada vez que cambien las tareas (solo después de cargar)
   useEffect(() => {
-    if (loaded && tareas.length >= 0) {
+    if (loaded) {
       localStorage.setItem('tareas', JSON.stringify(tareas))
     }
   }, [tareas, loaded])
